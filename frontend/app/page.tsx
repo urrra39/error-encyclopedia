@@ -1,9 +1,10 @@
 import type { JSX } from "react";
 
+import SearchBox from "@/components/SearchBox";
+
 /**
- * Home page (server component). Presents the product hero and a
- * non-interactive search box placeholder. The interactive search experience
- * lands in Phase 4.
+ * Home page (server component). Presents the product hero with the embedded
+ * interactive {@link SearchBox} client component and a feature trio below.
  */
 export default function HomePage(): JSX.Element {
   return (
@@ -16,48 +17,31 @@ export default function HomePage(): JSX.Element {
         Error Encyclopedia
       </h1>
 
-      <p className="mt-4 max-w-2xl text-lg text-slate-600 dark:text-slate-300">
-        Paste an error, understand it in plain English, and apply a verified
-        before/after fix — without the rabbit hole of stale forum threads.
+      <p className="mt-4 max-w-2xl text-base text-slate-600 sm:text-lg dark:text-slate-300">
+        Stop guessing. Search any error message, understand what it actually
+        means in plain English, and apply a verified before/after fix — no more
+        wading through stale forum threads.
       </p>
 
       <div className="mt-10 w-full max-w-2xl">
-        <div
-          className="flex items-center gap-3 rounded-xl border border-slate-300 bg-white px-4 py-3 text-left shadow-sm dark:border-slate-700 dark:bg-slate-900"
-          aria-hidden
-        >
-          <svg
-            className="h-5 w-5 shrink-0 text-slate-400"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9 3.5a5.5 5.5 0 1 0 3.4 9.82l3.64 3.64a.75.75 0 1 0 1.06-1.06l-3.64-3.64A5.5 5.5 0 0 0 9 3.5ZM5 9a4 4 0 1 1 8 0 4 4 0 0 1-8 0Z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-slate-400">
-            Search for an error message or code…
-          </span>
-        </div>
+        <SearchBox autoFocus placeholder="Search for an error message or code…" />
         <p className="mt-3 text-sm text-slate-400 dark:text-slate-500">
-          Interactive search is coming soon.
+          Try a snippet of the error text — results appear as you type.
         </p>
       </div>
 
       <dl className="mt-14 grid w-full max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
         <Feature
-          title="Plain English"
-          body="Every error explained the way a senior engineer would explain it to you."
-        />
-        <Feature
-          title="Root causes"
-          body="The actual reasons an error fires — not just the symptom on your screen."
+          title="Plain-English explanations"
+          body="Every error explained the way a senior engineer would explain it to you — no jargon, no hand-waving."
         />
         <Feature
           title="Verified fixes"
-          body="Before/after code you can trust, with an explanation of why it works."
+          body="Real before/after code you can trust, paired with a clear explanation of why the change works."
+        />
+        <Feature
+          title="Related errors"
+          body="Discover the errors that tend to travel together, so you can fix the root problem, not just the symptom."
         />
       </dl>
     </section>
