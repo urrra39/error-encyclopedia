@@ -8,6 +8,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Allow manual re-runs from the Actions tab (no CLI/auth required).
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save CI minutes.
 concurrency:
