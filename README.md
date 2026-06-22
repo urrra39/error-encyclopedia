@@ -318,4 +318,4 @@ error-encyclopedia/
 
 ## License
 
-[MIT](./LICENSE) © 2026
+[MIT](./LICENSE) © 2026 urrra39

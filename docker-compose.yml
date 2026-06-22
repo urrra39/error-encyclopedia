@@ -1,0 +1,116 @@
+# =============================================================================
+# Error Encyclopedia — full-stack orchestration
+#
+#   postgres     PostgreSQL 16 (system of record)
+#   meilisearch  Meilisearch 1.x (full-text search engine)
+#   backend      FastAPI API (depends on a healthy db + search)
+#   frontend     Next.js 14 standalone server (depends on a healthy backend)
+#
+# All defaults below let `docker compose up --build` work out-of-the-box.
+# Override any value by creating a local `.env` (see .env.example).
+# =============================================================================
+
+name: error-encyclopedia
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ee-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-error_enc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-error_enc_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-error_encyclopedia}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-error_enc} -d ${POSTGRES_DB:-error_encyclopedia}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.10
+    container_name: ee-meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-aSampleMasterKeyChangeMeInProd123}
+      MEILI_ENV: ${MEILI_ENV:-production}
+      MEILI_NO_ANALYTICS: "true"
+    ports:
+      - "${MEILISEARCH_PORT:-7700}:7700"
+    volumes:
+      - meili-data:/meili_data
+    healthcheck:
+      # The /health endpoint is unauthenticated; busybox `wget` ships with the
+      # Alpine-based image, so no extra tooling is required.
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:7700/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+    image: error-encyclopedia/backend
+    container_name: ee-backend
+    restart: unless-stopped
+    environment:
+      # Reach the other services by their compose service name on the network.
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-error_enc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-error_enc_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-error_encyclopedia}
+      MEILISEARCH_URL: http://meilisearch:7700
+      MEILISEARCH_API_KEY: ${MEILI_MASTER_KEY:-aSampleMasterKeyChangeMeInProd123}
+      MEILISEARCH_INDEX: errors
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+    healthcheck:
+      # /health returns 200 only when both Postgres and Meilisearch are reachable;
+      # urllib raises (non-zero exit) on any non-2xx or connection failure.
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Baked into the client bundle — must be reachable from the *browser*.
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    image: error-encyclopedia/frontend
+    container_name: ee-frontend
+    restart: unless-stopped
+    environment:
+      # Server-side rendering reaches the API over the private Docker network.
+      API_BASE_URL_INTERNAL: http://backend:8000
+      # Client-side requests use the host-mapped backend port.
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres-data:
+  meili-data:

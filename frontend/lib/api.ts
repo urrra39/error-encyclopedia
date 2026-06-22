@@ -52,12 +52,27 @@ export class ApiError extends Error {
 /**
  * Resolve the API base URL from the environment, stripping any trailing slash
  * so that path concatenation is predictable.
+ *
+ * On the server (SSR / React Server Components) we prefer `API_BASE_URL_INTERNAL`
+ * when set, so requests travel over the private network (e.g. `http://backend:8000`
+ * inside Docker, where `localhost` would not resolve to the API). In the browser
+ * that variable is undefined, so client requests fall back to the public
+ * `NEXT_PUBLIC_API_BASE_URL` (a host-reachable URL baked in at build time).
  */
 export function getApiBaseUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const serverOverride =
+    typeof window === "undefined"
+      ? process.env.API_BASE_URL_INTERNAL
+      : undefined;
+
+  const candidate =
+    typeof serverOverride === "string" && serverOverride.trim().length > 0
+      ? serverOverride
+      : process.env.NEXT_PUBLIC_API_BASE_URL;
+
   const base =
-    typeof fromEnv === "string" && fromEnv.trim().length > 0
-      ? fromEnv.trim()
+    typeof candidate === "string" && candidate.trim().length > 0
+      ? candidate.trim()
       : DEFAULT_BASE_URL;
   return base.replace(/\/+$/, "");
 }

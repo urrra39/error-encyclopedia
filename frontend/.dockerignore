@@ -1,0 +1,19 @@
+# Keep the build context small — these are rebuilt inside the image.
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Local environment / secrets
+.env
+.env.*
+!.env.example
+
+# Tooling / VCS
+.git/
+.gitignore
+npm-debug.log*
+*.md
+Dockerfile
+.dockerignore
