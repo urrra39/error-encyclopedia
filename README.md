@@ -1,5 +1,7 @@
 # 🧭 Error Encyclopedia
 
+[![CI](https://github.com/urrra39/error-encyclopedia/actions/workflows/ci.yml/badge.svg)](https://github.com/urrra39/error-encyclopedia/actions/workflows/ci.yml)
+
 > A high-performance, structured search engine for software errors. Every entry
 > pairs a **plain-English explanation**, the **common root causes**, and
 > **verified before/after fixes** — so you can stop scrolling stale forum threads
