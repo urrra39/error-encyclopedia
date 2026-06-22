@@ -1,0 +1,20 @@
+# ---------------------------------------------------------------------------
+# Error Encyclopedia — backend dependencies
+# ---------------------------------------------------------------------------
+# Web framework + ASGI server
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# ORM + async PostgreSQL driver.
+#   asyncpg     -> the driver the async SQLAlchemy engine actually runs on.
+#   psycopg2-binary -> sync driver, kept for migrations / tooling (e.g. Alembic).
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+
+# Validation / settings
+pydantic==2.9.2
+pydantic-settings==2.6.1
+
+# Search engine client (official Meilisearch Python SDK).
+meilisearch==0.31.5
